@@ -1,0 +1,73 @@
+package middlewares
+
+import (
+	"log"
+	"time"
+
+	"github.com/gin-gonic/gin"
+	"github.com/golang-jwt/jwt/v5"
+)
+
+const (
+	HeaderKey = "Auth-Token"
+)
+
+var (
+	Secret            = []byte("millom-session")
+	DefaultExpiration = time.Hour * 24 * 30
+)
+
+type JWTSessionClaims struct {
+	UserID int64          `json:"user_id,omitempty"`
+	Extra  map[string]any `json:"extra,omitempty"`
+	jwt.RegisteredClaims
+}
+
+// ParseJWT parses a JWT token and returns the claims as a map.
+func ParseJWT(token string, secret []byte) (*JWTSessionClaims, error) {
+	t, err := jwt.ParseWithClaims(token, &JWTSessionClaims{}, func(t *jwt.Token) (interface{}, error) {
+		return secret, nil
+	})
+
+	if m, ok := t.Claims.(*JWTSessionClaims); ok {
+		return m, nil
+	} else {
+		return nil, err
+	}
+}
+
+// GinJWTMiddleware is a Gin middleware that parses JWT tokens from the
+func GinJWTMiddleware() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		jwtToken := c.GetHeader(HeaderKey)
+		if jwtToken != "" {
+			claims, err := ParseJWT(jwtToken, Secret)
+			if err != nil {
+				log.Printf("ginjwt: parse jwt token error: %v", err)
+			} else {
+				c.Set("user_id", claims.UserID)
+				log.Println("ginjwt: user_id", claims.UserID)
+			}
+			// TODO 做服务端session校验
+		}
+		c.Next()
+	}
+}
+
+// GenJWTToken generates a JWT token with a given user ID and extra data.
+func GenJWTToken(userID int64, extra map[string]any) (string, error) {
+	// Create a new JWTClaims struct.
+	claims := JWTSessionClaims{
+		UserID: userID,
+		Extra:  extra,
+		RegisteredClaims: jwt.RegisteredClaims{
+			ExpiresAt: jwt.NewNumericDate(time.Now().Add(DefaultExpiration)),
+		},
+	}
+	// Create a new JWT token with the claims.
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, &claims)
+	// Sign the token with the secret.
+	ss, err := token.SignedString(Secret)
+	log.Println(ss, err)
+	return ss, err
+}
