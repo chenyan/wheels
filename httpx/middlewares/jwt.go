@@ -1,6 +1,7 @@
 package middlewares
 
 import (
+	"fmt"
 	"log"
 	"time"
 
@@ -9,7 +10,7 @@ import (
 )
 
 const (
-	HeaderKey = "Auth-Token"
+	HeaderKey = "Authorization"
 )
 
 var (
@@ -28,6 +29,9 @@ func ParseJWT(token string, secret []byte) (*JWTSessionClaims, error) {
 	t, err := jwt.ParseWithClaims(token, &JWTSessionClaims{}, func(t *jwt.Token) (interface{}, error) {
 		return secret, nil
 	})
+	if !t.Valid {
+		return nil, fmt.Errorf("invalid jwt token: %v", err)
+	}
 
 	if m, ok := t.Claims.(*JWTSessionClaims); ok {
 		return m, nil
@@ -46,7 +50,7 @@ func GinJWTMiddleware() gin.HandlerFunc {
 				log.Printf("ginjwt: parse jwt token error: %v", err)
 			} else {
 				c.Set("user_id", claims.UserID)
-				log.Println("ginjwt: user_id", claims.UserID)
+				log.Println("ginjwt: user_id,", claims.UserID, "expired", claims.ExpiresAt.Time)
 			}
 			// TODO 做服务端session校验
 		}
