@@ -37,3 +37,12 @@ func (q *Q[T, ID]) LikeBy(prefix string) ([]T, error) {
 func (q *Q[T, ID]) Save(t db.Record) error {
 	return q.db.Save(t)
 }
+
+func (q *Q[T, ID]) ListBy(cond db.Cond, order string, offset, limit int) ([]*T, error) {
+	var ts []*T
+	err := q.db.Collection(q.TableName).Find(cond).OrderBy(order).Offset(offset).Limit(limit).All(&ts)
+	if err != nil {
+		return nil, err
+	}
+	return ts, nil
+}
