@@ -1,7 +1,6 @@
 package pumap
 
 import (
-	"fmt"
 	"sync"
 	"sync/atomic"
 	"time"
@@ -56,7 +55,6 @@ func (m *PUMap[K, V]) Start() {
 			m.Lock()
 			funcs.F(func() { m.m = m.fetcher() })
 			m.Unlock()
-			fmt.Printf("run fetcher at %v\n", time.Now())
 			time.Sleep(m.interval)
 		}
 	}()
