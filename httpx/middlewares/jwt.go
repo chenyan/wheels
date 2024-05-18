@@ -16,11 +16,12 @@ const (
 var (
 	Secret            = []byte("rhizome-Xj3L.")
 	DefaultExpiration = time.Hour * 24 * 30
+	DefaultMaxAge     = 60 * 60 * 24 * 30
 )
 
 type JWTSessionClaims struct {
-	UserID   int64          `json:"user_id,omitempty"`
-	UserName string         `json:"user_name,omitempty"`
+	UserID   uint64         `json:"user_id,omitempty"`
+	Username string         `json:"username,omitempty"`
 	Extra    map[string]any `json:"extra,omitempty"`
 	jwt.RegisteredClaims
 }
@@ -60,11 +61,12 @@ func GinJWTMiddleware() gin.HandlerFunc {
 }
 
 // GenJWTToken generates a JWT token with a given user ID and extra data.
-func GenJWTToken(userID int64, userName string, extra map[string]any) (string, error) {
+func GenJWTToken(userID uint64, username string, extra map[string]any) (string, error) {
 	// Create a new JWTClaims struct.
 	claims := JWTSessionClaims{
-		UserID: userID,
-		Extra:  extra,
+		UserID:   userID,
+		Username: username,
+		Extra:    extra,
 		RegisteredClaims: jwt.RegisteredClaims{
 			ExpiresAt: jwt.NewNumericDate(time.Now().Add(DefaultExpiration)),
 		},

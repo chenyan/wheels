@@ -46,3 +46,7 @@ func (q *Q[T, ID]) ListBy(cond db.Cond, order string, offset, limit int) ([]*T, 
 	}
 	return ts, nil
 }
+
+func (q *Q[T, ID]) DeleteBy(cond db.Cond) error {
+	return q.db.Collection(q.TableName).Find(cond).Delete()
+}

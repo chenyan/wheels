@@ -1,4 +1,4 @@
-package rqs
+package reqs
 
 import (
 	"io"

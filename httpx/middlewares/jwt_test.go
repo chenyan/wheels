@@ -6,10 +6,11 @@ import (
 )
 
 func TestGenJWTToken(t *testing.T) {
-	userID := int64(123)
+	userID := uint64(123)
+	userName := "tom"
 	extra := map[string]any{"foo": "bar"}
 
-	token, err := GenJWTToken(userID, extra)
+	token, err := GenJWTToken(userID, userName, extra)
 	if err != nil {
 		t.Errorf("unexpected error: %v", err)
 	}
