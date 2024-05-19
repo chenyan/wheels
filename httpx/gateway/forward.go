@@ -4,12 +4,12 @@ import (
 	"bytes"
 	"fmt"
 	"io"
-	"log"
+	"log/slog"
 	"net/http"
 )
 
 var (
-	DebugEnabled = false
+	Logger *slog.Logger
 )
 
 // Forward forwards the request to targetEndpoint + path
@@ -21,9 +21,8 @@ func Forward(r *http.Request, targetEndpoint, path string) (http.Header, []byte,
 		errx    error
 	)
 	defer func() {
-		if DebugEnabled {
-			log.Printf("forward %s %s %d %d %s", r.Method, rawPath, reqSize, rspSize, errx)
-		}
+		Logger.DebugContext(
+			r.Context(), "forword", "method", r.Method, "rawpath", rawPath, "reqsz", reqSize, "rspsz", rspSize, "err", errx)
 	}()
 	rBody, err := io.ReadAll(r.Body)
 	if err != nil {

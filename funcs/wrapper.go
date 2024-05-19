@@ -7,7 +7,7 @@ import (
 )
 
 var (
-	errlogger = log.New(os.Stderr, "", log.LstdFlags|log.Lshortfile)
+	Errlogger = log.New(os.Stderr, "", log.LstdFlags|log.Lshortfile)
 	ShowStack bool
 	StackSize = 2048
 )
@@ -19,9 +19,9 @@ func F(f func()) {
 			if ShowStack {
 				buf := make([]byte, StackSize)
 				n := runtime.Stack(buf, false)
-				errlogger.Printf("recovered from panic: %v\n%s", r, buf[:n])
+				Errlogger.Printf("recovered from panic: %v\n%s", r, buf[:n])
 			} else {
-				errlogger.Printf("recovered from panic: %v", r)
+				Errlogger.Printf("recovered from panic: %v", r)
 			}
 		}
 	}()
