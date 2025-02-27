@@ -1,5 +1,5 @@
 // BEGIN: 8d7f5a3b7c5a
-package seq
+package seqs
 
 import (
 	"reflect"

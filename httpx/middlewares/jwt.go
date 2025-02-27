@@ -3,6 +3,8 @@ package middlewares
 import (
 	"fmt"
 	"log"
+	"log/slog"
+	"os"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -14,9 +16,10 @@ const (
 )
 
 var (
-	Secret            = []byte("rhizome-Xj3L.")
-	DefaultExpiration = time.Hour * 24 * 30
-	DefaultMaxAge     = 60 * 60 * 24 * 30
+	Secret                         = []byte("rhizome-Xj3L.")
+	DefaultExpiration              = time.Hour * 24 * 30
+	DefaultMaxAge                  = 60 * 60 * 24 * 30
+	Logger            *slog.Logger = slog.New(slog.NewTextHandler(os.Stderr, nil))
 )
 
 type JWTSessionClaims struct {
