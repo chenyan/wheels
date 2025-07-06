@@ -254,4 +254,13 @@ func TestMap_Values(t *testing.T) {
 			t.Errorf("Values() missing value %d", v)
 		}
 	}
-} 
+}
+
+// Test store nil and load nil
+func TestMap_StoreNil(t *testing.T) {
+	m := &Map[string, *int]{}
+	m.Store("test", nil)
+	if v, ok := m.Load("test"); v != nil || !ok {
+		t.Errorf("Store() failed, Load() = %v, %v,%T,%v want _, false", v, ok, v, v == nil)
+	}
+}
