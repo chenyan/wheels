@@ -211,14 +211,20 @@ func TestMap_Keys(t *testing.T) {
 	}
 
 	keys := m.Keys()
-	if len(keys) != len(items) {
-		t.Errorf("Keys() returned %d items, want %d", len(keys), len(items))
+	var count int
+	keys(func(k string) bool {
+		count++
+		return true
+	})
+	if count != len(items) {
+		t.Errorf("Keys() returned %d items, want %d", count, len(items))
 	}
 
 	keySet := make(map[string]bool)
-	for _, k := range keys {
+	keys(func(k string) bool {
 		keySet[k] = true
-	}
+		return true
+	})
 
 	for k := range items {
 		if !keySet[k] {
@@ -240,14 +246,20 @@ func TestMap_Values(t *testing.T) {
 	}
 
 	values := m.Values()
-	if len(values) != len(items) {
-		t.Errorf("Values() returned %d items, want %d", len(values), len(items))
+	var count int
+	values(func(v int) bool {
+		count++
+		return true
+	})
+	if count != len(items) {
+		t.Errorf("Values() returned %d items, want %d", count, len(items))
 	}
 
 	valueSet := make(map[int]bool)
-	for _, v := range values {
+	values(func(v int) bool {
 		valueSet[v] = true
-	}
+		return true
+	})
 
 	for _, v := range items {
 		if !valueSet[v] {
@@ -262,5 +274,28 @@ func TestMap_StoreNil(t *testing.T) {
 	m.Store("test", nil)
 	if v, ok := m.Load("test"); v != nil || !ok {
 		t.Errorf("Store() failed, Load() = %v, %v,%T,%v want _, false", v, ok, v, v == nil)
+	}
+}
+
+func TestMap_Items(t *testing.T) {
+	m := &Map[string, int]{}
+	items := map[string]int{
+		"a": 1,
+		"b": 2,
+		"c": 3,
+	}
+
+	for k, v := range items {
+		m.Store(k, v)
+	}
+
+	items2 := m.Items()
+	var count int
+	items2(func(k string, v int) bool {
+		count++
+		return true
+	})
+	if count != len(items) {
+		t.Errorf("Items() returned %d items, want %d", count, len(items))
 	}
 }

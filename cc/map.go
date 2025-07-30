@@ -1,6 +1,9 @@
 package cc
 
-import "sync"
+import (
+	"iter"
+	"sync"
+)
 
 // Map is a concurrent map implementation.
 // It is a wrapper around sync.Map that provides a more convenient API.
@@ -80,20 +83,26 @@ func (m *Map[K, V]) Len() int {
 	return len
 }
 
-func (m *Map[K, V]) Keys() []K {
-	keys := make([]K, 0, m.Len())
-	m.Range(func(key K, value V) bool {
-		keys = append(keys, key)
-		return true
-	})
-	return keys
+func (m *Map[K, V]) Keys() iter.Seq[K] {
+	return func(yield func(K) bool) {
+		m.Range(func(key K, value V) bool {
+			return yield(key)
+		})
+	}
 }
 
-func (m *Map[K, V]) Values() []V {
-	values := make([]V, 0, m.Len())
-	m.Range(func(key K, value V) bool {
-		values = append(values, value)
-		return true
-	})
-	return values
+func (m *Map[K, V]) Values() iter.Seq[V] {
+	return func(yield func(V) bool) {
+		m.Range(func(key K, value V) bool {
+			return yield(value)
+		})
+	}
+}
+
+func (m *Map[K, V]) Items() iter.Seq2[K, V] {
+	return func(yield func(K, V) bool) {
+		m.Range(func(key K, value V) bool {
+			return yield(key, value)
+		})
+	}
 }
