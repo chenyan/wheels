@@ -4,11 +4,17 @@ import (
 	"bytes"
 	"encoding/json"
 	"net/http"
+	"time"
+)
+
+var (
+	DefaultTimeout = 5 * time.Second
+	DefaultClient  = &http.Client{Timeout: DefaultTimeout}
 )
 
 // Get performs an HTTP GET request to the specified URL and returns a pointer to a Resp struct containing the response and any error encountered.
 func Get(url string) *Resp {
-	resp, err := http.Get(url)
+	resp, err := DefaultClient.Get(url)
 	return &Resp{Response: *resp, Error: err}
 }
 
@@ -18,10 +24,6 @@ func PostJSON(url string, body any) (*Resp, error) {
 	if err != nil {
 		return nil, err
 	}
-	resp, err := http.Post(url, "application/json", bytes.NewBuffer(bs))
-	if err != nil {
-		return nil, err
-	}
-	return &Resp{Response: *resp, Error: nil}, nil
+	resp, err := DefaultClient.Post(url, "application/json", bytes.NewBuffer(bs))
+	return &Resp{Response: *resp, Error: err}, nil
 }
-

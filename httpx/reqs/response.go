@@ -29,13 +29,7 @@ func (r *Resp) JSONMap() (map[string]any, error) {
 }
 
 func (r *Resp) String() (string, error) {
-	if r.Error != nil {
-		return "", r.Error
-	}
-	bs, err := io.ReadAll(r.Body)
-	if err != nil {
-		return "", err
-	}
+	bs, err := r.Bytes()
 	return string(bs), err
 }
 
