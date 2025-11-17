@@ -1,8 +1,8 @@
-// BEGIN: 8d7f5a3b7c5a
 package seqs
 
 import (
 	"reflect"
+	"strconv"
 	"testing"
 )
 
@@ -34,4 +34,30 @@ func TestApply(t *testing.T) {
 	}
 }
 
-// END: 8d7f5a3b7c5a
+func TestToMap(t *testing.T) {
+	type args struct {
+		ts []int
+		f  func(int) (string, int)
+	}
+	tests := []struct {
+		name string
+		args args
+		want map[string]int
+	}{
+		{
+			name: "convert slice to map",
+			args: args{
+				ts: []int{1, 2, 3},
+				f:  func(x int) (string, int) { return strconv.Itoa(x), x },
+			},
+			want: map[string]int{"1": 1, "2": 2, "3": 3},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := ToMap(tt.args.ts, tt.args.f); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("ToMap() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
