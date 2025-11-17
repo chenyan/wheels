@@ -19,3 +19,12 @@ type Number interface {
 }
 
 type Ordered = cmp.Ordered
+
+func Zero[T Number]() T {
+	var zero T
+	return zero
+}
+
+func IsZero[T Number](n T) bool {
+	return n == Zero[T]()
+}
