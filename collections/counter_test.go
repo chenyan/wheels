@@ -210,4 +210,4 @@ func TestCounter_Keys(t *testing.T) {
 	if !keys["a"] || !keys["b"] || !keys["c"] {
 		t.Error("Keys() missing some keys")
 	}
-} 
+}
