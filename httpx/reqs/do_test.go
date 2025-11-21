@@ -65,3 +65,39 @@ func TestGetJSON(t *testing.T) {
 		t.Errorf("Expected JSON data to be {1, \"B\"}, but got %v", data)
 	}
 }
+
+func TestPostJSON(t *testing.T) {
+	// Start a local HTTP server
+	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
+		rw.WriteHeader(http.StatusOK)
+		bs, err := io.ReadAll(req.Body)
+		if err != nil {
+			t.Errorf("Error reading request body: %v", err)
+		}
+		rw.Write(bs)
+	}))
+	defer server.Close()
+
+	// Make a POST request to the local server
+	resp := PostJSON(server.URL, map[string]any{"a": 1, "b": "B"})
+
+	// Check that the response status code is 200 OK
+	if resp.StatusCode != http.StatusOK {
+		t.Errorf("Expected status code %d, but got %d", http.StatusOK, resp.StatusCode)
+	}
+
+	var data struct {
+		A int    `json:"a"`
+		B string `json:"b"`
+	}
+	err := resp.JSON(&data)
+	if err != nil {
+		t.Errorf("Error decoding JSON: %v", err)
+	}
+	defer resp.Body.Close()
+
+	// Check that the response body matches the expected value
+	if data.A != 1 || data.B != "B" {
+		t.Errorf("Expected JSON data to be {1, \"B\"}, but got %v", data)
+	}
+}
