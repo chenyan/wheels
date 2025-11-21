@@ -1,6 +1,6 @@
 package seqs
 
-// Apply applies the function f to each element of the slice ts and returns the resulting slice.
+// Apply applies the function f to each element of the slice ts in place and returns the resulting slice.
 func Apply[T any](ts []T, f func(T) T) []T {
 	for i, t := range ts {
 		ts[i] = f(t)
@@ -16,4 +16,13 @@ func ToMap[T any](ts []T, f func(T) (string, T)) map[string]T {
 		m[k] = v
 	}
 	return m
+}
+
+// Map applies the function f to each element of the slice ts and returns the new resulting slice.
+func Map[T any](ts []T, f func(T) T) []T {
+	rs := make([]T, len(ts))
+	for i, t := range ts {
+		rs[i] = f(t)
+	}
+	return rs
 }
