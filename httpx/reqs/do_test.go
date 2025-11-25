@@ -2,8 +2,10 @@ package reqs
 
 import (
 	"io"
+	"log"
 	"net/http"
 	"net/http/httptest"
+	"strconv"
 	"testing"
 )
 
@@ -100,4 +102,51 @@ func TestPostJSON(t *testing.T) {
 	if data.A != 1 || data.B != "B" {
 		t.Errorf("Expected JSON data to be {1, \"B\"}, but got %v", data)
 	}
+}
+
+func TestPostFiles(t *testing.T) {
+	// Start a local HTTP server
+	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
+		req.ParseMultipartForm(1024 * 1024)
+		form := req.MultipartForm
+		if form == nil {
+			t.Errorf("Expected multipart form to be not nil")
+		}
+		if len(form.File) == 0 {
+			t.Errorf("Expected file to be not nil")
+		}
+		if form.File["file"] == nil {
+			t.Errorf("Expected file to be not nil")
+		}
+		log.Println(form)
+		file, err := form.File["file"][0].Open()
+		if err != nil {
+			t.Errorf("Error opening file: %v", err)
+		}
+		defer file.Close()
+		bs, err := io.ReadAll(file)
+		if err != nil {
+			t.Errorf("Error reading file: %v", err)
+		}
+		if string(bs) != "Hello, world!" {
+			t.Errorf("Expected file content to be 'Hello, world!', but got '%s'", string(bs))
+		}
+		rw.WriteHeader(http.StatusOK)
+		rw.Write([]byte(`{"size": ` + strconv.Itoa(len(bs)) + `}`))
+	}))
+	defer server.Close()
+
+	// Make a POST request to the local server
+	resp := PostFiles(server.URL, map[string]string{"a": "1", "file": "@testdata/test.txt"})
+	mapData, err := resp.JSONMap()
+	if err != nil {
+		t.Errorf("Error decoding JSON: %v", err)
+	}
+	if mapData["size"] == 0 {
+		t.Errorf("Expected size to be 12, but got %d", mapData["size"])
+	}
+	if resp.StatusCode != http.StatusOK {
+		t.Errorf("Expected status code %d, but got %d", http.StatusOK, resp.StatusCode)
+	}
+	defer resp.Body.Close()
 }

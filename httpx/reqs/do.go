@@ -41,12 +41,23 @@ func Post2(url string, body io.Reader, opts *Opts) *Resp {
 // The files map is a map of field names and file paths.
 // The file paths can start with "@" to indicate a file path.
 func PostFiles(url string, files map[string]string) *Resp {
+	return PostFiles2(url, files, nil)
+}
+
+func PostFiles2(url string, files map[string]string, opts *Opts) *Resp {
 	contentType, body, err := createForm(files)
 	if err != nil {
 		return &Resp{Error: err}
 	}
-	resp, err := DefaultClient.Post(url, contentType, body)
-	return &Resp{Response: *resp, Error: err}
+	if opts == nil {
+		opts = &Opts{Headers: make(map[string]string)}
+	} else {
+		if opts.Headers == nil {
+			opts.Headers = make(map[string]string)
+		}
+	}
+	opts.Headers["Content-Type"] = contentType
+	return Post2(url, body, opts)
 }
 
 func Do(method string, url string, body io.Reader, opts *Opts) *Resp {
@@ -55,5 +66,8 @@ func Do(method string, url string, body io.Reader, opts *Opts) *Resp {
 		return &Resp{Error: err}
 	}
 	resp, err := DefaultClient.Do(r)
-	return &Resp{Response: *resp, Error: err}
+	if err != nil {
+		return &Resp{Error: err}
+	}
+	return &Resp{Response: *resp, Error: nil}
 }
