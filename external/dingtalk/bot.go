@@ -22,9 +22,9 @@ func NewBot(webhookURL string) *Bot {
 }
 
 func (b *Bot) Send(msg any) (*SendResult, error) {
-	rsp, err := reqs.PostJSON(b.WebhookURL, msg)
-	if err != nil {
-		return nil, err
+	rsp := reqs.PostJSON(b.WebhookURL, msg)
+	if rsp.Error != nil {
+		return nil, rsp.Error
 	}
 	var r SendResult
 	if err := rsp.JSON(&r); err != nil {
