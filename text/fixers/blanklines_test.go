@@ -75,7 +75,7 @@ func TestRemoveExtraBlankLines(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := RemoveExtraBlankLines(tt.input)
+			got, err := RemoveExtraBlankLines(tt.input, 1)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("RemoveExtraBlankLines() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -95,13 +95,13 @@ func BenchmarkRemoveExtraBlankLines(b *testing.B) {
 
 	b.Run("SmallInput", func(b *testing.B) {
 		for i := 0; i < b.N; i++ {
-			_, _ = RemoveExtraBlankLines(smallInput)
+			_, _ = RemoveExtraBlankLines(smallInput, 1)
 		}
 	})
 
 	b.Run("LargeInput", func(b *testing.B) {
 		for i := 0; i < b.N; i++ {
-			_, _ = RemoveExtraBlankLines(largeInput)
+			_, _ = RemoveExtraBlankLines(largeInput, 1)
 		}
 	})
 }

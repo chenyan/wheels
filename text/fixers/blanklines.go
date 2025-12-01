@@ -15,7 +15,7 @@ var (
 
 // RemoveExtraBlankLines 移除文本中的多余空行，保留最多一个连续的空行
 // 如果输入超过最大大小限制，将返回错误
-func RemoveExtraBlankLines(content string) (string, error) {
+func RemoveExtraBlankLines(content string, keepMaxBlankLines int) (string, error) {
 	// 处理边界情况
 	if len(content) == 0 {
 		return "", nil
@@ -37,7 +37,7 @@ func RemoveExtraBlankLines(content string) (string, error) {
 		line := scanner.Text()
 		if strings.TrimSpace(line) == "" {
 			blankLineCount++
-			if blankLineCount <= 1 {
+			if blankLineCount <= keepMaxBlankLines {
 				result.WriteString(line + "\n")
 			}
 		} else {
