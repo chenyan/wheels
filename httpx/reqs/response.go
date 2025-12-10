@@ -28,7 +28,7 @@ func (r *Resp) JSONMap() (map[string]any, error) {
 	return v, err
 }
 
-func (r *Resp) String() (string, error) {
+func (r *Resp) Text() (string, error) {
 	bs, err := r.Bytes()
 	return string(bs), err
 }

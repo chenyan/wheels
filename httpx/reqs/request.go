@@ -2,6 +2,7 @@ package reqs
 
 import (
 	"bytes"
+	"context"
 	"fmt"
 	"io"
 	"mime/multipart"
@@ -65,10 +66,16 @@ func (o *Opts) AddCookie(cookie *http.Cookie) *Opts {
 	return o
 }
 
+func DefaultContext() (context.Context, context.CancelFunc) {
+	return context.WithTimeout(context.Background(), DefaultTimeout)
+}
+
 // BuildRequest 创建一个http请求, 合并opts中的参数到请求中, 返回请求对象和错误
 func BuildRequest(method string, urlstr string, body io.Reader, opts *Opts) (*http.Request, error) {
+	var ctx context.Context
 	if opts == nil {
-		return http.NewRequest(method, urlstr, body)
+		ctx, _ = DefaultContext()
+		return http.NewRequestWithContext(ctx, method, urlstr, body)
 	}
 
 	if opts.Cookies != nil {
@@ -94,7 +101,13 @@ func BuildRequest(method string, urlstr string, body io.Reader, opts *Opts) (*ht
 		urlstr = u.String()
 	}
 
-	r, err := http.NewRequest(method, urlstr, body)
+	if opts.Timeout == 0 {
+		ctx, _ = DefaultContext()
+	} else {
+		ctx, _ = context.WithTimeout(context.Background(), opts.Timeout)
+	}
+
+	r, err := http.NewRequestWithContext(ctx, method, urlstr, body)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create request: %s %w", urlstr, err)
 	}
@@ -114,4 +127,12 @@ func Q(kv ...string) url.Values {
 		values.Add(kv[i], kv[i+1])
 	}
 	return values
+}
+
+func (o *Opts) AddHeader(key, value string) *Opts {
+	if o.Headers == nil {
+		o.Headers = make(map[string]string)
+	}
+	o.Headers[key] = value
+	return o
 }

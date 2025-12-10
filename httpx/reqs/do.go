@@ -10,7 +10,7 @@ import (
 
 var (
 	DefaultTimeout = 5 * time.Second
-	DefaultClient  = &http.Client{Timeout: DefaultTimeout}
+	DefaultClient  = &http.Client{}
 )
 
 // Get performs an HTTP GET request to the specified URL and returns a pointer to a Resp struct containing the response and any error encountered.
@@ -25,11 +25,19 @@ func Get2(url string, opts *Opts) *Resp {
 
 // PostJSON performs an HTTP POST request to the specified URL with a JSON body and returns a pointer to a Resp struct containing the response and any error encountered.
 func PostJSON(url string, body any) *Resp {
+	return PostJSON2(url, body, &Opts{})
+}
+
+func PostJSON2(url string, body any, opts *Opts) *Resp {
 	bs, err := json.Marshal(body)
 	if err != nil {
 		return &Resp{Error: err}
 	}
-	return Post2(url, bytes.NewReader(bs), &Opts{Headers: map[string]string{"Content-Type": "application/json"}})
+	if opts == nil {
+		opts = &Opts{}
+	}
+	opts.AddHeader("Content-Type", "application/json")
+	return Post2(url, bytes.NewReader(bs), opts)
 }
 
 // Post2 performs an HTTP POST request to the specified URL with the given body and options and returns a pointer to a Resp struct containing the response and any error encountered.
@@ -50,13 +58,9 @@ func PostFiles2(url string, files map[string]string, opts *Opts) *Resp {
 		return &Resp{Error: err}
 	}
 	if opts == nil {
-		opts = &Opts{Headers: make(map[string]string)}
-	} else {
-		if opts.Headers == nil {
-			opts.Headers = make(map[string]string)
-		}
+		opts = &Opts{}
 	}
-	opts.Headers["Content-Type"] = contentType
+	opts.AddHeader("Content-Type", contentType)
 	return Post2(url, body, opts)
 }
 
